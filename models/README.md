@@ -16,10 +16,16 @@ This section of the code is used to evaluate the cross-species predictive capabi
 `output_neg.fa`: The negative set required for training the CNN
 
 ### **2. CNN architecture and training**
-`python 02_build_model.py input_pos.fa input_neg.fa model_file`
+`python 02_build_model.py input_pos.fa input_neg.fa model_result_file`
 #### **Input files**
 `input_pos.fa input_neg.fa`: The positive and negative set files required for training the CNN.
 
-`model_file`: Optimal model parameters (best validation AUROC) 
+`model_result_file`: Optimal model parameters (best validation AUROC) 
+
+### **3. Identify the salient regions from the input sequences**
+使用captum中的integrated gradient的方法在每条染色质开放区域进行显著性检测分析，从而确定每条输入序列中特征序列，特征序列的长度为20bp
+Apply Captum's Integrated Gradients ([Apply Captum's Integrated Gradients to detect significant 20bp feature sequences in each chromatin accessible region.](https://captum.ai/docs/extension/integrated_gradients)) to detect feature sequences (length = 20bp) in each chromatin accessible region.
+
+
 
 ## **Dependencies**
