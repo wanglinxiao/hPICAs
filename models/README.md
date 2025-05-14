@@ -33,5 +33,8 @@ Apply Captum's Integrated Gradients (https://captum.ai/docs/extension/integrated
 
 `input_model`: CNN model file (*.pth)
 
+### **4. Identify the salient regions from the input sequences**
+
+
 
 ## **Dependencies**
