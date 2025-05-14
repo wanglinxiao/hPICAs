@@ -56,10 +56,10 @@ SR_kmer=list(sorted_SR_dict.keys())[:50]
 
 #convert k-mers to Tomtom input format.
 SR_kmer_input=' '.join(SR_kmer)
-command_iupac2meme="iupac2meme                     -dna                     %s > %s" %(SR_kmer_input,query_motif_file)
+command_iupac2meme="iupac2meme -dna %s > %s" %(SR_kmer_input,query_motif_file)
 proc1=subprocess.run(command_iupac2meme,shell=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
 
 #TomTom (meme-suite)
-command_tomtom="tomtom         -no-ssc         -oc %s         -verbosity 1         -min-overlap 5         -dist pearson         -evalue         -thresh 10         -time 300 %s %s" %(tomtom_output_dir,query_motif_file,motif_database_file)
+command_tomtom="tomtom -no-ssc -oc %s -verbosity 1 -min-overlap 5 -dist pearson -evalue -thresh 10 -time 300 %s %s" %(tomtom_output_dir,query_motif_file,motif_database_file)
 proc2=subprocess.run(command_tomtom,shell=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
 
