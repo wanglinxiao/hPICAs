@@ -24,8 +24,14 @@ This section of the code is used to evaluate the cross-species predictive capabi
 
 ### **3. Identify the salient regions from the input sequences**
 Apply Captum's Integrated Gradients (https://captum.ai/docs/extension/integrated_gradients) to detect feature sequences (length = 20bp) in each chromatin accessible region.
-`python 03_identify_salient_region.py input_OCR.fa output_result_file input_model`
 
+`python 03_identify_salient_region.py input_OCR.fa output_result_file input_model`
+#### **Input files**
+`input_OCR.fa`: ATAC-seq-derived chromatin accessible regions (FASTA format).
+
+`output_result_file`: The output file contains the salient region for each open chromatin region, along with the corresponding genomic coordinates.
+
+`input_model`: CNN model file (*.pth)
 
 
 ## **Dependencies**
