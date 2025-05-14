@@ -9,11 +9,11 @@ This section of the code is used to evaluate the cross-species predictive capabi
 
 `hg38.fa`: Reference genome file for the corresponding species
 
+`repeatmasker_file`: Repeating element file for the corrsponing species, downloaded from the UCSC RepeatMasker track.
+
 `output_pos.fa`: The positive set required for training the CNN
 
 `output_neg.fa`: The negative set required for training the CNN
-
-`repeatmasker_file`: Repeating element file for the corrsponing species, downloaded from the UCSC RepeatMasker track.
 
 ### **2. CNN architecture and training**
 `python 02_build_model.py input_pos.fa input_neg.fa model_file`
