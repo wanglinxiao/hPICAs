@@ -4,7 +4,7 @@ This section of the code is used to evaluate the cross-species predictive capabi
 ## **Usage**
 ### **Prepare datasets for training CNN**
 `python 01_prepare_build_model.py input_OCR.bed hg38.fa repeatmasker_file output_pos.fa output_neg.fa`
-### **Input files**
+#### **Input files**
 `input_OCR.bed`: ATAC-seq-derived chromatin accessible regions (narrowPeak format).
 
 `hg38.fa`: Reference genome file for the corresponding species
