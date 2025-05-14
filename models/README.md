@@ -16,7 +16,10 @@ This section of the code is used to evaluate the cross-species predictive capabi
 `repeatmasker_file`: Repeating element file for the corrsponing species, downloaded from the UCSC RepeatMasker track.
 
 ### **2. CNN architecture and training**
+`python 02_build_model.py input_pos.fa input_neg.fa model_file`
+#### **Input files**
+`input_pos.fa input_neg.fa`: The positive and negative set files required for training the CNN.
 
-
+`model_file`: Optimal model parameters (best validation AUROC) 
 
 ## **Dependencies**
