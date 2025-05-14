@@ -23,8 +23,8 @@ This section of the code is used to evaluate the cross-species predictive capabi
 `model_result_file`: Optimal model parameters (best validation AUROC) 
 
 ### **3. Identify the salient regions from the input sequences**
-使用captum中的integrated gradient的方法在每条染色质开放区域进行显著性检测分析，从而确定每条输入序列中特征序列，特征序列的长度为20bp
-Apply Captum's Integrated Gradients ([Apply Captum's Integrated Gradients to detect significant 20bp feature sequences in each chromatin accessible region.](https://captum.ai/docs/extension/integrated_gradients)) to detect feature sequences (length = 20bp) in each chromatin accessible region.
+Apply Captum's Integrated Gradients (https://captum.ai/docs/extension/integrated_gradients) to detect feature sequences (length = 20bp) in each chromatin accessible region.
+`python 03_identify_salient_region.py input_OCR.fa output_result_file input_model`
 
 
 
