@@ -33,8 +33,16 @@ Apply Captum's Integrated Gradients (https://captum.ai/docs/extension/integrated
 
 `input_model`: CNN model file (*.pth)
 
-### **4. Identify the salient regions from the input sequences**
+### **4. Motif discovery from salient regions**
+`python 04_TomTom.py salient_region.bed output_motif_file tomtom_output_dir motif_database`
+#### **Input files**
+salient_region.bed: Feature sequences identified in each input sequence using Integrated Gradients.
 
+output_motif_file: Convert each feature sequence to MEME format (see [https://meme-suite.org/meme/doc/meme-format.html]).
 
+tomtom_output_dir: TOMTOM output: matched motifs per feature (Evalue < 1e-4).
+
+motif_database: Motif database file
 
 ## **Dependencies**
+
