@@ -111,7 +111,7 @@ for peak_id, pos_seq in positive_seqs.items():
         if datetime.datetime.now() - start_time > max_sampling_time:
             break
         region = random.choice(gap_intervals[chrom])
-        rand_start = random.randint(region[0], region[1] - seq_len)
+        rand_start = random.randint(region[0], region[1])
         rand_end = rand_start + seq_len
         try:
             neg_seq = fasta.fetch(chrom, rand_start, rand_end).upper()
