@@ -9,7 +9,7 @@ This section of the code is used to evaluate the cross-species predictive capabi
 
 `hg38.fa`: Reference genome file for the corresponding species
 
-`repeatmasker_file`: Repeating element file for the corrsponing species, downloaded from the UCSC RepeatMasker track.
+`repeatmasker_file`: Repeating element file for the corrsponding species, downloaded from the UCSC RepeatMasker track.
 
 `output_pos.fa`: The positive set required for training the CNN
 
