@@ -1,358 +1,192 @@
 #!/usr/bin/env python
-# coding: utf-8
+# -*- coding: utf-8 -*-
+"""
+Train a VGG16-based CNN model on DNA sequences to classify chromatin accessibility.
+This script includes data preprocessing, dataset construction, model definition, and training loop with early stopping.
+"""
 
 import os
 import sys
 import re
 import numpy as np
-import pandas as pd
-import pickle
-import matplotlib.pyplot as plt
-import random
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
+import torch.optim as optim
 from torch.utils import data
 from sklearn.metrics import roc_auc_score
-from sklearn.metrics import roc_curve
-from scipy.stats import spearmanr
-from scipy.stats import pearsonr
-from torchsummary import summary
 
-pos_file=sys.argv[1]
-neg_file=sys.argv[2]
-model_save_file=sys.argv[3]
+# Parse input arguments
+pos_file = sys.argv[1]
+neg_file = sys.argv[2]
+model_save_path = sys.argv[3]
 
-#ont-hot coding
-def seq_to_hot(seq):
-    seq=seq.replace('a','A')
-    seq=seq.replace('c','C')
-    seq=seq.replace('g','G')
-    seq=seq.replace('t','T')
-    seq=seq.replace('n','N')
+# One-hot encoding function for DNA sequences
+def seq_to_onehot(seq):
+    seq = seq.upper().replace('N', '0')
+    mapping = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
+    onehot = np.zeros((4, len(seq)), dtype=np.float32)
+    for i, base in enumerate(seq):
+        if base in mapping:
+            onehot[mapping[base], i] = 1.0
+    return onehot
 
-    Aseq=seq
-    Aseq=Aseq.replace('A','1')
-    Aseq=Aseq.replace('C','0')
-    Aseq=Aseq.replace('G','0')
-    Aseq=Aseq.replace('T','0')
-    Aseq=Aseq.replace('N','0')
-    Aseq=np.asarray(list(Aseq),dtype='float32')
+def generate_onehot_dataset(seq_list):
+    return np.array([seq_to_onehot(seq) for seq in seq_list])
 
-    Cseq=seq
-    Cseq=Cseq.replace('A','0')
-    Cseq=Cseq.replace('C','1')
-    Cseq=Cseq.replace('G','0')
-    Cseq=Cseq.replace('T','0')
-    Cseq=Cseq.replace('N','0')
-    Cseq=np.asarray(list(Cseq),dtype='float32')
+# Pad or trim sequences to length 1000
+def pad_sequence(seq, target_len=1000):
+    if len(seq) < target_len:
+        return seq.center(target_len, 'N')
+    center = len(seq) // 2
+    return seq[center - target_len // 2 : center + target_len // 2]
 
-    Gseq=seq
-    Gseq=Gseq.replace('A','0')
-    Gseq=Gseq.replace('C','0')
-    Gseq=Gseq.replace('G','1')
-    Gseq=Gseq.replace('T','0')
-    Gseq=Gseq.replace('N','0')
-    Gseq=np.asarray(list(Gseq),dtype='float32')
+# Load sequences and labels from fasta-like files
+def load_labeled_data(pos_file, neg_file, subset):
+    def load_fasta(file):
+        with open(file, 'r') as f:
+            lines = f.read().splitlines()
+        return {lines[i][1:]: pad_sequence(lines[i+1].upper()) for i in range(0, len(lines), 2)}
 
-    Tseq=seq
-    Tseq=Tseq.replace('A','0')
-    Tseq=Tseq.replace('C','0')
-    Tseq=Tseq.replace('G','0')
-    Tseq=Tseq.replace('T','1')
-    Tseq=Tseq.replace('N','0')
-    Tseq=np.asarray(list(Tseq),dtype='float32')
-    hot=np.vstack((Aseq,Cseq,Gseq,Tseq))
-    
-    return hot
+    pos_dict = load_fasta(pos_file)
+    neg_dict = load_fasta(neg_file)
 
-def generate_one_hot_seq(seq_list):
-    onehot_seq_list=[]
-    for seq in seq_list:
-        onehot_seq=seq_to_hot(seq)
-        onehot_seq_list.append(onehot_seq)
-    
-    onehot_seq_array=np.array(onehot_seq_list)
-    return onehot_seq_array
+    def filter_by_chr(seqs, chroms):
+        return [s for k, s in seqs.items() if re.match(r'(chr\w+):', k).group(1) in chroms]
 
-#padding sequence
-def padding_sequence(seq):
-    ref_seq_length = len(seq)
-    if ref_seq_length < 1000:
-        padding_seq=seq.center(1000,'N')
-    else:
-        center=int(ref_seq_length/2)
-        padding_seq=seq[center-500:center+500]
-        
-    return padding_seq
+    chrom_split = {
+        'train': lambda c: c not in {'chr1', 'chr2'},
+        'val':   lambda c: c == 'chr1',
+        'test':  lambda c: c == 'chr2'
+    }
 
-#Split into training, validation, and test sets.
-def seq_label(pos_file,neg_file,sign):
-    pos_seq_dict={}
-    neg_seq_dict={}
+    select_fn = chrom_split[subset]
+    get_chr = lambda s: re.match(r'(chr\w+):', s).group(1)
 
-    for line in open(pos_file,'r'):
-        line=line.strip()
-        if line.startswith('>'):
-            pos_peak=line[1:]
-        else:
-            pos_seq=line.upper()
-            pos_padding_seq=padding_sequence(pos_seq)
-            pos_seq_dict[pos_peak] = pos_padding_seq
-            
-    for line in open(neg_file,'r'):
-        line=line.strip()
-        if line.startswith('>'):
-            neg_peak=line[1:]
-        else:
-            neg_seq=line.upper()
-            neg_padding_seq=padding_sequence(neg_seq)
-            neg_seq_dict[neg_peak] = neg_padding_seq
+    pos_seqs = [s for k, s in pos_dict.items() if select_fn(get_chr(k))]
+    neg_seqs = [s for k, s in neg_dict.items() if select_fn(get_chr(k))]
 
-    if sign == 'train':
-        pos_train_seq=[]
-        neg_train_seq=[]
-        for pos_peak in list(pos_seq_dict.keys()):
-            peak_chrom=re.findall('(.+):(.+)-(.+)',pos_peak)[0][0]
-            if (peak_chrom != 'chr1') and (peak_chrom != 'chr2'):
-                pos_train_seq.append(pos_seq_dict[pos_peak])
-        for neg_peak in list(neg_seq_dict.keys()):
-            peak_chrom=re.findall('(.+):(.+)-(.+)',neg_peak)[0][0]
-            if (peak_chrom != 'chr1') and (peak_chrom != 'chr2'):
-                neg_train_seq.append(neg_seq_dict[neg_peak])
-                
-        pos_train_label=[1 for x in range(len(pos_train_seq))]
-        neg_train_label=[0 for x in range(len(neg_train_seq))]
-        
-        total_seq=pos_train_seq+neg_train_seq
-        total_label=pos_train_label+neg_train_label
-        
-    elif sign == 'val':
-        pos_val_seq=[]
-        neg_val_seq=[]
-        for pos_peak in list(pos_seq_dict.keys()):
-            peak_chrom=re.findall('(.+):(.+)-(.+)',pos_peak)[0][0]
-            if peak_chrom == 'chr1' :
-                pos_val_seq.append(pos_seq_dict[pos_peak])
-        for neg_peak in list(neg_seq_dict.keys()):
-            peak_chrom=re.findall('(.+):(.+)-(.+)',neg_peak)[0][0]
-            if peak_chrom == 'chr1' :
-                neg_val_seq.append(neg_seq_dict[neg_peak])
-                
-        pos_val_label=[1 for x in range(len(pos_val_seq))]
-        neg_val_label=[0 for x in range(len(neg_val_seq))]
-        
-        total_seq=pos_val_seq+neg_val_seq
-        total_label=pos_val_label+neg_val_label
-        
-    elif sign == 'test':
-        pos_test_seq=[]
-        neg_test_seq=[]
-        for pos_peak in list(pos_seq_dict.keys()):
-            peak_chrom=re.findall('(.+):(.+)-(.+)',pos_peak)[0][0]
-            if peak_chrom == 'chr2':
-                pos_test_seq.append(pos_seq_dict[pos_peak])
-        for neg_peak in list(neg_seq_dict.keys()):
-            peak_chrom=re.findall('(.+):(.+)-(.+)',neg_peak)[0][0]
-            if peak_chrom == 'chr2':
-                neg_test_seq.append(neg_seq_dict[neg_peak])
-                
-        pos_test_label=[1 for x in range(len(pos_test_seq))]
-        neg_test_label=[0 for x in range(len(neg_test_seq))]
-        
-        total_seq=pos_test_seq+neg_test_seq
-        total_label=pos_test_label+neg_test_label
-        
-    return total_seq,total_label
+    labels = np.array([1]*len(pos_seqs) + [0]*len(neg_seqs), dtype=np.int64)
+    seqs = generate_onehot_dataset(pos_seqs + neg_seqs)
+    return seqs, labels
 
-train_seq,train_label=seq_label(pos_file=pos_file,neg_file=neg_file,sign='train')
-val_seq,val_label=seq_label(pos_file=pos_file,neg_file=neg_file,sign='val')
-test_seq,test_label=seq_label(pos_file=pos_file,neg_file=neg_file,sign='test')
+# Load datasets
+train_X, train_y = load_labeled_data(pos_file, neg_file, 'train')
+val_X, val_y = load_labeled_data(pos_file, neg_file, 'val')
+test_X, test_y = load_labeled_data(pos_file, neg_file, 'test')
 
-train_label=np.array(train_label)
-val_label=np.array(val_label)
-test_label=np.array(test_label)
+# PyTorch dataset wrapper
+class SequenceDataset(data.Dataset):
+    def __init__(self, X, y):
+        self.X = X
+        self.y = y
 
-train_data=generate_one_hot_seq(train_seq)
-val_data=generate_one_hot_seq(val_seq)
-test_data=generate_one_hot_seq(test_seq)
-
-#create pytorch dataset
-class TrainDataset(data.Dataset):
-    def __init__(self):
-        self.Data=train_data
-        self.Label=train_label
-        
-    def __getitem__(self,index):
-        txt=torch.from_numpy(self.Data[index])
-        label=torch.tensor(self.Label[index])
-        return txt,label
-    
     def __len__(self):
-        return len(self.Data)
+        return len(self.y)
 
-class ValDataset(data.Dataset):
-    def __init__(self):
-        self.Data=val_data
-        self.Label=val_label
-        
-    def __getitem__(self,index):
-        txt=torch.from_numpy(self.Data[index])
-        label=torch.tensor(self.Label[index])
-        return txt,label
-    
-    def __len__(self):
-        return len(self.Data)
-    
-class TestDataset(data.Dataset):
-    def __init__(self):
-        self.Data=test_data
-        self.Label=test_label
-        
-    def __getitem__(self,index):
-        txt=torch.from_numpy(self.Data[index])
-        label=torch.tensor(self.Label[index])
-        return txt,label
-    
-    def __len__(self):
-        return len(self.Data)
+    def __getitem__(self, idx):
+        return torch.from_numpy(self.X[idx]), torch.tensor(self.y[idx], dtype=torch.float32)
 
-Train=TrainDataset()
-Val=ValDataset()
-Test=TestDataset()
-
-train_loader=data.DataLoader(Train,batch_size=64,shuffle=True,num_workers=4)
-val_loader=data.DataLoader(Val,batch_size=64,shuffle=False,num_workers=4)
-test_loader=data.DataLoader(Test,batch_size=64,shuffle=False,num_workers=4)
-
-#model architecture
-cfg={'VGG16':[280,280,'M',180,180,'M',120,120,'M']}
+# Model configuration and architecture
+CFG = {'VGG16': [280, 280, 'M', 180, 180, 'M', 120, 120, 'M']}
 
 class VGG(nn.Module):
     def __init__(self,vgg_name):
         super(VGG,self).__init__()
-        self.feature=self.make_layers(cfg[vgg_name])
+        self.feature=self.make_layers(CFG[vgg_name])
         self.fc1=nn.Linear(360,64)
         self.fc2=nn.Linear(64,1)
         
     def forward(self,x):
         out=self.feature(x)          
-        out=out.view(out.size(0),-1)
-        out1=F.relu(self.fc1(out))  
+        out=out.view(out.size(0),-1) 
+        out1=F.relu(self.fc1(out))   
         out2=torch.sigmoid(self.fc2(out1))
         out2=out2.view(-1) 
-        return out1,out2
+        return out2
     
-    def make_layers(self,cfg):
+    def make_layers(self,CFG):
         layers=[]
         in_channels=4
-        for x in cfg:
+        for x in CFG:
             if x == 'M':
                 layers.append(nn.MaxPool1d(kernel_size=2,stride=2))
             elif x == 280:
-                layers += [nn.Conv1d(in_channels,x,kernel_size=13),nn.BatchNorm1d(x),nn.Threshold(0,1e-6)]
+                layers += [nn.Conv1d(in_channels,x,kernel_size=13),nn.BatchNorm1d(x),nn.ReLU(inplace=True)]
                 in_channels=x
             elif x == 180:
-                layers += [nn.Conv1d(in_channels,x,kernel_size=11),nn.BatchNorm1d(x),nn.Threshold(0,1e-6)]
+                layers += [nn.Conv1d(in_channels,x,kernel_size=11),nn.BatchNorm1d(x),nn.ReLU(inplace=True)]
                 in_channels=x
             elif x == 120:
-                layers += [nn.Conv1d(in_channels,x,kernel_size=9),nn.BatchNorm1d(x),nn.Threshold(0,1e-6)]
+                layers += [nn.Conv1d(in_channels,x,kernel_size=9),nn.BatchNorm1d(x),nn.ReLU(inplace=True)]
                 in_channels=x                
         layers += [nn.AdaptiveAvgPool1d(3)]
         return nn.Sequential(*layers)
 
-device = torch.device('cuda:0')
+# Training and evaluation
 
-criterion=nn.BCELoss()
-criterion=criterion.to(device)
-
-optimizer=optim.Adam(VGG16.parameters(),lr=0.0001)
-
-VGG16=VGG('VGG16')
-VGG16=VGG16.to(device)
-
-def train(model,dataloader,optimizer,criterion):
-    print('Start train')
+def train_epoch(model, loader, criterion, optimizer, device):
     model.train()
-    train_running_loss=0
-    for train_seq,train_labels in dataloader:   
-        train_seq=train_seq.to(device)   
-        train_labels=train_labels.to(device)
+    total_loss = 0
+    for batch_x, batch_y in loader:
+        batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+        optimizer.zero_grad()
+        outputs = model(batch_x)
+        loss = criterion(outputs, batch_y)
+        loss.backward()
+        optimizer.step()
+        total_loss += loss.item()
+    return total_loss / len(loader)
 
-        _,train_pred=model(train_seq)
-        train_pred=train_pred.to(torch.float32)     
-        train_labels=train_labels.to(torch.float32) 
-        loss=criterion(train_pred,train_labels) 
-
-        optimizer.zero_grad() 
-        loss.backward()       
-        optimizer.step()     
-        train_running_loss += loss.item()   
-        
-    train_loss=train_running_loss/len(dataloader)
-
-    return train_loss
-
-def validate(model,dataloader,criterion):
-    print('Start validation')
+def validate_epoch(model, loader, criterion, device):
     model.eval()
-    val_running_loss=0
-    val_all_preds,val_all_labels=[],[]
-    for val_seq,val_labels in dataloader:
-        val_seq=val_seq.to(device)
-        val_labels=val_labels.to(device)
+    total_loss = 0
+    preds, labels = [], []
+    with torch.no_grad():
+        for batch_x, batch_y in loader:
+            batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+            outputs = model(batch_x)
+            loss = criterion(outputs, batch_y)
+            total_loss += loss.item()
+            preds.extend(outputs.cpu().numpy())
+            labels.extend(batch_y.cpu().numpy())
+    auc = roc_auc_score(labels, preds)
+    return total_loss / len(loader), auc
 
-        _,val_pred=model(val_seq)
-        val_pred=val_pred.to(torch.float32)     
-        val_labels=val_labels.to(torch.float32) 
-        loss=criterion(val_pred,val_labels)
-        val_running_loss += loss.item()
+# Device setup
+model = VGG('VGG16')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+model = model.to(device)
 
-        val_all_preds.extend(val_pred.detach().cpu().numpy())
-        val_all_labels.extend(val_labels.cpu().numpy())
+# Dataloaders
+train_loader = data.DataLoader(SequenceDataset(train_X, train_y), batch_size=64, shuffle=True)
+val_loader = data.DataLoader(SequenceDataset(val_X, val_y), batch_size=64)
 
-    val_auc=roc_auc_score(val_all_labels,val_all_preds)
-    val_loss=val_running_loss/len(dataloader)
-   
-    return val_loss,val_auc
+# Optimizer and loss function
+optimizer = optim.Adam(model.parameters(), lr=1e-4)
+criterion = nn.BCELoss()
 
-train_loss=[]
-val_loss,val_auc=[],[]
-max_val_auc=None
-epochs=30
-counter=0
-patience=7
+# Training loop with early stopping
+best_auc = 0
+patience, counter = 7, 0
 
-#Start training
-for epoch in range(1,epochs+1):  
-    print(f'Epoch:{epoch}')
-    train_epoch_loss=train(model=VGG16,dataloader=train_loader,criterion=criterion,optimizer=optimizer)
-    train_loss.append(train_epoch_loss)
-    print(f'Train Loss = {train_epoch_loss}')
+for epoch in range(1, 31):
+    print(f"Epoch {epoch}")
+    train_loss = train_epoch(model, train_loader, criterion, optimizer, device)
+    val_loss, val_auc = validate_epoch(model, val_loader, criterion, device)
+    print(f"Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | Val AUC: {val_auc:.4f}")
 
-#Start validation
-    val_epoch_loss,val_epoch_auc=validate(model=VGG16,dataloader=val_loader,criterion=criterion)
-    val_loss.append(val_epoch_loss)
-    val_auc.append(val_epoch_auc)
-    print(f'Validation Loss = {val_epoch_loss}')
-    print(f'Validation Auc = {val_epoch_auc}')
-     
-#Early stopping
-    if max_val_auc is None:         
-        max_val_auc=val_epoch_auc
-        torch.save({'epoch':epoch,
-            'model_state_dict':VGG16.state_dict(),
-            'optimizer_state_dict':optimizer.state_dict(),
-            'Val_auc':val_epoch_auc},model_save_path)
-    elif max_val_auc > val_epoch_auc: 
+    if val_auc > best_auc:
+        best_auc = val_auc
+        counter = 0
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'val_auc': val_auc
+        }, model_save_path)
+    else:
         counter += 1
         if counter >= patience:
+            print("Early stopping triggered.")
             break
-    else:                              
-        max_val_auc = val_epoch_auc
-        counter = 0
-        torch.save({'epoch':epoch,
-            'model_state_dict':VGG16.state_dict(),
-            'optimizer_state_dict':optimizer.state_dict(),
-            'Val_auc':val_epoch_auc},model_save_path)
