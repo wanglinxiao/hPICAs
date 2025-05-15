@@ -36,13 +36,13 @@ Apply Captum's Integrated Gradients (https://captum.ai/docs/extension/integrated
 ### **4. Motif discovery from salient regions**
 `python 04_TomTom.py salient_region.bed output_motif_file tomtom_output_dir motif_database`
 #### **Input files**
-salient_region.bed: Feature sequences identified in each input sequence using Integrated Gradients.
+`salient_region.bed`: Feature sequences identified in each input sequence using Integrated Gradients.
 
-output_motif_file: Convert each feature sequence to MEME format (see [https://meme-suite.org/meme/doc/meme-format.html]).
+`output_motif_file`: Convert each feature sequence to MEME format (see [https://meme-suite.org/meme/doc/meme-format.html]).
 
-tomtom_output_dir: TOMTOM output directory.
+`tomtom_output_dir`: TOMTOM output directory.
 
-motif_database: Motif database file
+`motif_database`: Motif database file
 
 ## **Dependencies**
 Numpy == 1.26.4, pandas == 2.2.2, pysam == 0.19.0, torch == 1.13.1+cu117
