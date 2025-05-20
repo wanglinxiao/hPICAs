@@ -1,6 +1,4 @@
 # **Description**
-这部分代码描述了如何推测human-chimpanzee的共同祖先序列以及如何通过模拟DNA序列进化过程确定与祖先序列的染色质开放性存在显著差异的区域。我们首先确定human序列在chimpanzee和gorilla基因上的同源序列（见materials and methods），利用muscle5完成多序列比对并利用phylofit基于比对结果拟合进化树。Fastml是一款基于物种进化关系来重构祖先序列的软件，可以使用多种算法重构祖先序列，重点在于对Indel和字符的精确重建。对于FastML，我们采取的碱基替代模型是GTR，选择最大似然法推测祖先序列可能存在的indel。
-为了确定与human-chimpanzee共同祖先染色质开放性显著差异的OCR区域，我们利用Alisim模拟序列进化过程。我们将模拟过程整理成可执行的程序(03_Alisim.py)，允许使用者选择指定细胞类型的预训练模型，输入单个human序列以及对应的祖先序列即可模拟序列进化过程并计算p值。
 This section describes the inference of the human-chimpanzee common ancestral sequences and the simulation-based approach used to identify regions with significantly increased chromatin accessibility compared to the ancestor.
 
 # **Usage**
@@ -21,3 +19,16 @@ FastML, a tool designed for reconstructing ancestral sequences based on phylogen
 `msa_dir tree_dir`: Containing the multiple sequence alignments and phylogenetic trees of all human OCRs in a single cell type.
 
 `output_dir`: The output directory of FastML.
+
+## **3. Simulate DNA sequence evolution**
+We utilized Alisim to simulate the sequence evolutionary process and packaged the pipeline into an executable script (03_Alisim.py). This implementation allows users to select a pre-trained model corresponding to a specific cell type and, by inputting a single human sequence along with its corresponding ancestral sequence, simulate the evolutionary process and compute the associated p-value.
+
+`python 03_Alisim.py model_file human_seq ancestral_seq tree_file output_file`
+### **Input files**
+`model_file`: A pre-trained CNN from 111 cell types
+`human_seq ancestral_seq`: Input DNA sequence
+`tree_file`: Fitted evolutionary tree file
+`output_file`: output file
+
+# **Help**
+# **Author**
