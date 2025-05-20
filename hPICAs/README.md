@@ -26,8 +26,11 @@ We utilized Alisim to simulate the sequence evolutionary process and packaged th
 `python 03_Alisim.py model_file human_seq ancestral_seq tree_file output_file`
 ### **Input files**
 `model_file`: A pre-trained CNN from 111 cell types
+
 `human_seq ancestral_seq`: Input DNA sequence
+
 `tree_file`: Fitted evolutionary tree file
+
 `output_file`: output file
 
 # **Help**
