@@ -16,4 +16,7 @@ We first identified orthologous sequences of the human open chromatin regions (O
 ## **2. Reconstruct ancestral sequences**
 FastML, a tool designed for reconstructing ancestral sequences based on phylogenetic relations. FastML implements several algorithms that reconstruct the ancestral sequences with emphasis on an accurate reconstruction of both indels and characters. For ancestral inference, we used the General Time Reversible (GTR) model of nucleotide substitution and applied the maximum likelihood method to estimate potential indels.
 
-``
+`python 02_FastML.py msa_dir tree_dir output_dir`
+### **Input files**
+`msa_dir tree_dir`: Containing the multiple sequence alignments and phylogenetic trees of all human OCRs in a single cell type.
+`output_dir`: The output directory of FastML.
