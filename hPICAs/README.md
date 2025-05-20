@@ -19,4 +19,5 @@ FastML, a tool designed for reconstructing ancestral sequences based on phylogen
 `python 02_FastML.py msa_dir tree_dir output_dir`
 ### **Input files**
 `msa_dir tree_dir`: Containing the multiple sequence alignments and phylogenetic trees of all human OCRs in a single cell type.
+
 `output_dir`: The output directory of FastML.
