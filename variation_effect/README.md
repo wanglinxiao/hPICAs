@@ -7,9 +7,9 @@ By introducing mutations individually into the ancestral sequence and computing 
 ### **Input files**
 `human_seq anc_seq`: Human chromatin accessibility regions and their corresponding ancestral sequences.
 
-`model path`: A pre-trained CNN from 111 cell types。
+`model path`: A pre-trained CNN from 111 cell types.
 
-`output_file`: output result file。
+`output_file`: output result file.
 
 # **Help**
 # **Author**
