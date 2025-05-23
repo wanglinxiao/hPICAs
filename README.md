@@ -10,7 +10,7 @@ We provide example code for several methods described in our paper, including th
 To evaluate the cross-species predictive performance of the CNN on chromatin accessibility in primates, we collected datasets from lymphoblastoid cell lines, the prefrontal cortex, and the Brodmann area of the brain, including samples from humans, chimpanzees, and macaques. By comparing the cross-species AUROC values and the similarity of motif types in the input sequences, we demonstrate that the CNN exhibits robust cross-species prediction performance. More details can follow folder CNN.
 
 #### Identification of hPICAs
-<img width="536" alt="屏幕截图 2025-05-23 153411" src="https://github.com/user-attachments/assets/17573456-c1fa-45e6-a699-b31e3fa52433" />
+![Uploading 屏幕截图 2025-05-23 153411.png…]()
 Based on CNN predictions for both human and human–chimpanzee ancestral sequences, we simulated the evolutionary process of DNA sequences to identify chromatin accessibility regions that show increased accessibility compared to neutrally evolving regions. This framework offers a novel perspective for studying molecular evolution. More details can follow folder hPICA.
 
 #### predicted variation effect
