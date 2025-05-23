@@ -229,6 +229,7 @@ if __name__ == "__main__":
     anc_seq = sys.argv[2]
     model_path = sys.argv[3]
     result_file = sys.argv[4]
-
-    main_pipeline(human_seq, anc_seq, model_path, result_file)
+    
+    model,device=load_model(model_path=model_path)
+    main_pipeline(human_seq, anc_seq, model, device, result_file)
 
