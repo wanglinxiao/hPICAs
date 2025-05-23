@@ -1,5 +1,5 @@
 ## **Description**
-We provide example codes for several methods described in our paper, including the construction of cross-species prediction models, interpretability analysis of CNNs, identification of hPICAs (human Predicted Increased Chromatin Accessibility regions), and CNN-based prediction of the functional effects of variations. We also supply the necessary example data to enable other users to reproduce our analyses. In addition, the pre-trained models have been made available via Google Drive:
+We provide example codes for several methods described in our paper, including the construction of cross-species prediction models, interpretability analysis of CNNs, identification of hPICAs (human Predicted Increased Chromatin Accessibility regions), and CNN-based prediction of the functional effects of variations. We also supply the necessary example data to enable other users to reproduce our analyses. In addition, the pre-trained models have been made available via Google Drive.
 #### Evaluate the cross-species predictive capability of the CNN (bulk and single-cell ATAC-seq)
 `https://drive.google.com/file/d/1-xiKOT68UPYMcJElYzByrrKfnUr4zl7k/view?usp=drive_link`
 #### Prediction models for 111 adult human cell types (single-cell ATAC-seq)
