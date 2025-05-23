@@ -1,20 +1,20 @@
 ## **Description**
-我们提供了文章中部分方法的示例代码，包括构建跨物种预测模型、CNN的可解释性分析、鉴定hPICA（human Predicted Increased Chromatin Accessibility regions）、以及基于CNN来预测变异的遗传效应。我们也提供了必要的示例数据，以便其他用户可以实现我们的代码。同时，我们也将训练好的模型存储在google drive。
-#### 评测CNN的跨物种预测能力 （bulk and single-cell ATAC-seq）
+We provide example code for several methods described in our paper, including the construction of cross-species prediction models, interpretability analysis of CNNs, identification of hPICAs (human Predicted Increased Chromatin Accessibility regions), and CNN-based prediction of the functional effects of variantions. We also supply the necessary example data to enable other users to reproduce our analyses. In addition, the pre-trained models have been made available via Google Drive：
+#### Evaluate the cross-species predictive capability of the CNN (bulk and single-cell ATAC-seq)
 `https://drive.google.com/file/d/1-xiKOT68UPYMcJElYzByrrKfnUr4zl7k/view?usp=drive_link`
-#### 成年人111个细胞类型的预测模型（single-cell ATAC-seq）
+#### Prediction models for 111 adult human cell types (single-cell ATAC-seq)
 `https://drive.google.com/file/d/1A4CNxeXiSGZYTylL-ORweKgMBMvpdHym/view?usp=drive_link`
 
 ## **Tutorials**
-### CNN的跨物种预测评估
-为了评估CNN在灵长类动物的跨物种预测染色质开放性的表现，我们收集了淋巴细胞系、脑额前叶以及大脑brodmann area的数据集，数据集包含人、黑猩猩以及猕猴。通过比较跨物种预测的AUROC以及输入序列motif类型的相似性，来说明CNN具有robust跨物种预测表现。代码详情见folder CNN
+#### Cross-species predictive evaluation of the CNN
+To evaluate the cross-species predictive performance of the CNN on chromatin accessibility in primates, we collected datasets from lymphoblastoid cell lines, the prefrontal cortex, and the Brodmann area of the brain, including samples from humans, chimpanzees, and macaques. By comparing the cross-species AUROC values and the similarity of motif types in the input sequences, we demonstrate that the CNN exhibits robust cross-species prediction performance. More details can follow folder CNN.
 
-### 鉴定hPICA
+#### Identification of hPICAs
 <img width="536" alt="屏幕截图 2025-05-23 153411" src="https://github.com/user-attachments/assets/17573456-c1fa-45e6-a699-b31e3fa52433" />
-基于CNN在人以及人-黑猩猩共同祖先序列的预测，通过模拟DNA序列的进化过程来染色质开放区域相较于中性进化过程开放性增强的区域，提供了研究分子进化的新思路。代码详情见folder hPICA
+Based on CNN predictions for both human and human–chimpanzee ancestral sequences, we simulated the evolutionary process of DNA sequences to identify chromatin accessibility regions that show increased accessibility compared to neutrally evolving regions. This framework offers a novel perspective for studying molecular evolution. More details can follow folder hPICA.
 
-### 预测变异效应
-基于预训练的模型，预测由共同祖先向现代人进化过程中发生的变异对染色质开放性的影响。代码详情见folder variation_effect
+#### predicted variation effect
+Using a pre-trained model, we predict the impact of functional variants that occurred during the evolutionary transition from the common ancestor to modern humans on chromatin accessibility. More details can follow folder variation_effect.
 
-### **Reference**
-### **Help**
+## **Reference**
+## **Help**
