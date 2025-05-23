@@ -32,8 +32,8 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 ERROR_LOG = os.path.join(OUTPUT_DIR, 'fastml_error_peak.txt')
 
 # Path to FastML and its Perl wrapper
-FASTML_WRAPPER = '/home/wanglinxiao/wangzhen/local/FastML.v3.11/www/fastml/FastML_Wrapper.pl'
-PERL_EXEC = '/home/wanglinxiao/wangzhen/anaconda3/envs/fastml/bin/perl'
+FASTML_WRAPPER = '~/FastML.v3.11/www/fastml/FastML_Wrapper.pl'
+PERL_EXEC = '~/bin/perl'
 
 # ----------------------------- #
 # Ancestral Sequence Inference #
