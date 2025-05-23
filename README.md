@@ -12,7 +12,7 @@ To evaluate the cross-species predictive performance of the CNN on chromatin acc
 #### Identification of hPICAs
 ![Description](https://github.com/wanglinxiao/hPICAs/blob/main/images/Framework%20of%20identifying%20hPICAs.png)
 
-Based on CNN predictions for both human and human–chimpanzee ancestral sequences, we simulated the evolutionary process of DNA sequences to identify chromatin accessibility regions that show increased accessibility compared to neutrally evolving regions. This framework offers a novel perspective for studying molecular evolution. More details can follow folder hPICA.
+Based on CNN predictions for both human and human–chimpanzee ancestral sequences, we simulated the evolutionary process of DNA sequences to identify chromatin accessibility regions that show increased accessibility compared to neutrally evolving regions. This framework offers a novel perspective for studying molecular evolution. More details can follow folder identify_hPICAs.
 
 #### Variation effect prediction
 Using a pre-trained model, we predict the impact of functional variants that occurred during the evolutionary transition from the common ancestor to modern humans on chromatin accessibility. More details can follow folder variation_effect.
