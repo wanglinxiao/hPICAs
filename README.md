@@ -11,6 +11,7 @@ To evaluate the cross-species predictive performance of the CNN on chromatin acc
 
 #### Identification of hPICAs
 ![Uploading 屏幕截图 2025-05-23 153411.png…]()
+
 Based on CNN predictions for both human and human–chimpanzee ancestral sequences, we simulated the evolutionary process of DNA sequences to identify chromatin accessibility regions that show increased accessibility compared to neutrally evolving regions. This framework offers a novel perspective for studying molecular evolution. More details can follow folder hPICA.
 
 #### predicted variation effect
